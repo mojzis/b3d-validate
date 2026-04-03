@@ -1,6 +1,6 @@
 [project]
 name = "b3d-validate"
-version = "0.1.1"
+version = "0.2.0"
 description = "Lightweight validation toolkit for build123d shapes"
 requires-python = ">=3.11"
 license = "MIT"
