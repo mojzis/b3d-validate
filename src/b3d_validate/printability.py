@@ -23,6 +23,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Literal
 
+from build123d import Compound, ShapeList
+
 from OCP.BRep import BRep_Tool
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
@@ -493,6 +495,9 @@ def validate_printability(
         print(report)
     """
     t0 = time.perf_counter()
+
+    if isinstance(shape, ShapeList):
+        shape = Compound(children=list(shape))
 
     defaults = FDM_DEFAULTS if process == "fdm" else SLA_DEFAULTS
     _min_wall = min_wall_mm if min_wall_mm is not None else defaults["min_wall_mm"]
