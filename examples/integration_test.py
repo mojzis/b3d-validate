@@ -1,10 +1,12 @@
 """Test b3d_validate on a range of shapes — good, bad, and tricky."""
 
 import sys
+
 sys.path.insert(0, "/home/claude")
 
 from build123d import *
-from b3d_validate import validate_geometry, validate_printability, full_check
+
+from b3d_validate import full_check, validate_geometry, validate_printability
 
 SEPARATOR = "=" * 60
 
@@ -61,7 +63,7 @@ for tier in (1, 2, 3):
     geo = validate_geometry(complex_part, tier=tier)
     print(f"  Tier {tier}: {'PASS' if geo.ok else 'FAIL'} ({geo.elapsed_ms:.0f}ms)")
 
-print(f"\nFull check:")
+print("\nFull check:")
 print(full_check(complex_part))
 
 # ----- Test 6: Individual report fields (programmatic access) -----
@@ -71,5 +73,9 @@ print(SEPARATOR)
 geo = validate_geometry(box)
 prn = validate_printability(box, process="fdm")
 print(f"  geo.ok={geo.ok} geo.volume={geo.volume:.1f} geo.n_faces={geo.n_faces}")
-print(f"  prn.ok={prn.ok} prn.min_wall_mm={prn.min_wall_mm:.2f} prn.overhang_face_count={prn.overhang_face_count}")
-print(f"  prn.mesh_checked={prn.mesh_checked} prn.mesh_watertight={prn.mesh_watertight}")
+print(
+    f"  prn.ok={prn.ok} prn.min_wall_mm={prn.min_wall_mm:.2f} prn.overhang_face_count={prn.overhang_face_count}"
+)
+print(
+    f"  prn.mesh_checked={prn.mesh_checked} prn.mesh_watertight={prn.mesh_watertight}"
+)

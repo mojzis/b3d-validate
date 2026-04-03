@@ -26,13 +26,18 @@ Dependencies:
     Optional:  trimesh (for mesh-level printability checks)
 """
 
-from b3d_validate.geometry import validate_geometry, GeometryReport
-from b3d_validate.printability import validate_printability, PrintabilityReport
+from importlib.metadata import version
+from typing import Literal
+
+from b3d_validate.geometry import GeometryReport, validate_geometry
+from b3d_validate.printability import PrintabilityReport, validate_printability
+
+__version__ = version("b3d-validate")
 
 
 def full_check(
     shape,
-    process: str = "fdm",
+    process: Literal["fdm", "sla"] = "fdm",
     tier: int = 3,
     **printability_kwargs,
 ) -> str:
@@ -63,9 +68,9 @@ def full_check(
 
 
 __all__ = [
-    "validate_geometry",
-    "validate_printability",
-    "full_check",
     "GeometryReport",
     "PrintabilityReport",
+    "full_check",
+    "validate_geometry",
+    "validate_printability",
 ]

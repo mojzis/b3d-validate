@@ -13,20 +13,16 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from build123d import Shape
 
 # ---------------------------------------------------------------------------
 # OCCT imports (always available alongside build123d)
 # ---------------------------------------------------------------------------
-from OCP.BRepCheck import BRepCheck_Analyzer, BRepCheck_Status
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Check
+from OCP.BRepCheck import BRepCheck_Analyzer, BRepCheck_Status
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
-from OCP.TopAbs import TopAbs_FACE, TopAbs_EDGE, TopAbs_WIRE, TopAbs_VERTEX, TopAbs_OUT
-from OCP.TopExp import TopExp_Explorer
 from OCP.Precision import Precision
+from OCP.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_OUT, TopAbs_VERTEX, TopAbs_WIRE
+from OCP.TopExp import TopExp_Explorer
 
 # Map BRepCheck_Status enum values to short human-readable names.
 # We only list the ones that matter most — the enum has 37+ members.
@@ -142,6 +138,7 @@ class GeometryReport:
 # Validation tiers
 # ---------------------------------------------------------------------------
 
+
 def _tier1(shape, report: GeometryReport):
     """Null, is_valid, volume, area, bounding box."""
     if shape is None:
@@ -194,9 +191,7 @@ def _tier2(shape, report: GeometryReport):
         )
 
     if report.n_solids == 1 and report.n_shells != 1:
-        report._warn(
-            f"single solid but {report.n_shells} shells — expected 1"
-        )
+        report._warn(f"single solid but {report.n_shells} shells — expected 1")
 
     if report.n_faces < 4:
         report._warn(f"only {report.n_faces} faces — minimum for a closed solid is 4")
@@ -257,6 +252,7 @@ def _tier3(shape, report: GeometryReport):
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def validate_geometry(shape, tier: int = 3) -> GeometryReport:
     """
