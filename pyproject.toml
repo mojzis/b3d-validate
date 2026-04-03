@@ -158,3 +158,12 @@ help = "Run all checks (report all failures)"
 [tool.poe.tasks.setup]
 cmd = "bash scripts/install-hooks.sh"
 help = "Install git hooks"
+
+[tool.poe.tasks.release]
+cmd = "bash scripts/release.sh ${bump}"
+help = "Bump version, tag, and push (triggers PyPI publish). Args: patch|minor|major"
+
+[tool.poe.tasks.release.args.bump]
+positional = true
+required = true
+help = "Version bump type: patch, minor, or major"
