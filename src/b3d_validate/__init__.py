@@ -29,10 +29,19 @@ Dependencies:
 from importlib.metadata import version
 from typing import Literal
 
+from build123d import Compound, ShapeList
+
 from b3d_validate.geometry import GeometryReport, validate_geometry
 from b3d_validate.printability import PrintabilityReport, validate_printability
 
 __version__ = version("b3d-validate")
+
+
+def _normalize_shape(shape):
+    """If shape is a ShapeList, wrap into a Compound so OCCT operations work."""
+    if isinstance(shape, ShapeList):
+        return Compound(children=shape.copy())  # ty: ignore[invalid-argument-type]
+    return shape
 
 
 def full_check(
@@ -49,6 +58,7 @@ def full_check(
 
     Returns a single string suitable for LLM consumption.
     """
+    shape = _normalize_shape(shape)
     geo = validate_geometry(shape, tier=tier)
     prn = validate_printability(shape, process=process, **printability_kwargs)
 

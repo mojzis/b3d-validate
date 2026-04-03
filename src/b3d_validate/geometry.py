@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 # ---------------------------------------------------------------------------
 # OCCT imports (always available alongside build123d)
 # ---------------------------------------------------------------------------
+from build123d import Compound, ShapeList
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Check
 from OCP.BRepCheck import BRepCheck_Analyzer, BRepCheck_Status
 from OCP.BRepClass3d import BRepClass3d_SolidClassifier
@@ -275,6 +276,9 @@ def validate_geometry(shape, tier: int = 3) -> GeometryReport:
     """
     t0 = time.perf_counter()
     report = GeometryReport()
+
+    if isinstance(shape, ShapeList):
+        shape = Compound(children=shape.copy())  # ty: ignore[invalid-argument-type]
 
     if not _tier1(shape, report):
         report.elapsed_ms = (time.perf_counter() - t0) * 1000
