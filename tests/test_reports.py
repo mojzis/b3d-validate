@@ -116,8 +116,10 @@ class TestPrintabilityReport:
             min_wall_mm=0.5,
             thin_walls=[
                 ThinWallInfo(
-                    thickness_mm=0.5, location="(1.0,2.0,3.0)",
-                    face_a_idx=0, face_b_idx=1,
+                    thickness_mm=0.5,
+                    location="(1.0,2.0,3.0)",
+                    face_a_idx=0,
+                    face_b_idx=1,
                 ),
             ],
         )

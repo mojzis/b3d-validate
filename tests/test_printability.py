@@ -38,9 +38,7 @@ class TestWallThickness:
         assert r.thin_walls == []
 
     def test_thin_walled_detected(self, thin_walled):
-        r = validate_printability(
-            thin_walled, check_mesh=False, min_wall_mm=1.0
-        )
+        r = validate_printability(thin_walled, check_mesh=False, min_wall_mm=1.0)
         assert r.min_wall_mm < 1.0
         assert len(r.thin_walls) > 0
         # each thin wall should have a location string
@@ -55,9 +53,7 @@ class TestSmallFeatures:
         assert r.small_faces == 0
 
     def test_tiny_chamfer_detected(self, tiny_chamfer):
-        r = validate_printability(
-            tiny_chamfer, check_mesh=False, min_feature_mm=0.5
-        )
+        r = validate_printability(tiny_chamfer, check_mesh=False, min_feature_mm=0.5)
         assert r.small_edges > 0 or r.small_faces > 0
 
 

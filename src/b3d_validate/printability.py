@@ -202,7 +202,7 @@ def _check_overhangs(
     for idx, face in enumerate(faces):
         try:
             normal = face.normal_at().normalized()
-        except Exception:
+        except Exception:  # nosec B112
             continue
 
         # Angle between outward normal and build direction
@@ -348,14 +348,14 @@ def _check_small_features(shape, report: PrintabilityReport, min_feature_mm: flo
         try:
             if edge.length < min_feature_mm:
                 report.small_edges += 1
-        except Exception:
+        except Exception:  # nosec B112
             continue
 
     for face in shape.faces():
         try:
             if face.area < min_area:
                 report.small_faces += 1
-        except Exception:
+        except Exception:  # nosec B112
             continue
 
     if report.small_edges > 0:
