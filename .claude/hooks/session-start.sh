@@ -6,8 +6,9 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-# Install dependencies
+# Update uv and install dependencies
 cd "$CLAUDE_PROJECT_DIR"
+uv self update --quiet
 uv sync --quiet
 
 # Install pre-commit hooks
