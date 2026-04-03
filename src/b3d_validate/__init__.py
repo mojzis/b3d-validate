@@ -40,7 +40,7 @@ __version__ = version("b3d-validate")
 def _normalize_shape(shape):
     """If shape is a ShapeList, wrap into a Compound so OCCT operations work."""
     if isinstance(shape, ShapeList):
-        return Compound(children=list(shape))
+        return Compound(children=shape.copy())  # ty: ignore[invalid-argument-type]
     return shape
 
 

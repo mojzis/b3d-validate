@@ -1,4 +1,4 @@
-"""Test that validate_geometry, validate_printability, and full_check accept ShapeLists."""
+"""Test that validation functions accept ShapeLists."""
 
 from build123d import Box, ShapeList
 
