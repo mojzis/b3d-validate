@@ -21,17 +21,14 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
-if TYPE_CHECKING:
-    from build123d import Shape
-
+from OCP.BRep import BRep_Tool
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
-from OCP.TopLoc import TopLoc_Location
-from OCP.BRep import BRep_Tool
-from OCP.TopExp import TopExp_Explorer
 from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED
+from OCP.TopExp import TopExp_Explorer
+from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS
 
 # ---------------------------------------------------------------------------
@@ -182,6 +179,7 @@ class PrintabilityReport:
 # Overhang detection (BRep level)
 # ---------------------------------------------------------------------------
 
+
 def _check_overhangs(
     shape, report: PrintabilityReport, threshold_deg: float, build_dir=(0, 0, 1)
 ):
@@ -215,18 +213,20 @@ def _check_overhangs(
         if angle_from_up > math.pi / 2 + threshold_rad:
             # Skip if this face is on the build plate
             face_bb = face.bounding_box()
-            if face_bb.min.Z < z_min + plate_tol and abs(normal.Z + 1) < 0.1:
+            if z_min + plate_tol > face_bb.min.Z and abs(normal.Z + 1) < 0.1:
                 continue  # flat bottom face on the plate
 
             overhang_deg = math.degrees(angle_from_up) - 90
             face_area = face.area
             overhang_area += face_area
-            overhangs.append(OverhangInfo(
-                face_idx=idx,
-                angle_deg=overhang_deg,
-                area=face_area,
-                center=_vec3_str(face.center()),
-            ))
+            overhangs.append(
+                OverhangInfo(
+                    face_idx=idx,
+                    angle_deg=overhang_deg,
+                    area=face_area,
+                    center=_vec3_str(face.center()),
+                )
+            )
 
     report.overhang_face_count = len(overhangs)
     report.overhang_area_pct = (overhang_area / total_area) * 100
@@ -245,6 +245,7 @@ def _check_overhangs(
 # ---------------------------------------------------------------------------
 # Wall thickness (BRep level — face-pair distance)
 # ---------------------------------------------------------------------------
+
 
 def _check_wall_thickness(
     shape, report: PrintabilityReport, min_wall_mm: float, max_face_pairs: int = 500
@@ -310,12 +311,14 @@ def _check_wall_thickness(
                         # Get the location of the closest point
                         pt = dist_calc.PointOnShape1(1)
                         loc_str = f"({pt.X():.1f},{pt.Y():.1f},{pt.Z():.1f})"
-                        report.thin_walls.append(ThinWallInfo(
-                            thickness_mm=d,
-                            face_a_idx=i,
-                            face_b_idx=j,
-                            location=loc_str,
-                        ))
+                        report.thin_walls.append(
+                            ThinWallInfo(
+                                thickness_mm=d,
+                                face_a_idx=i,
+                                face_b_idx=j,
+                                location=loc_str,
+                            )
+                        )
                 pairs_checked += 1
             except Exception:
                 pairs_checked += 1
@@ -336,9 +339,10 @@ def _check_wall_thickness(
 # Small feature detection (BRep level)
 # ---------------------------------------------------------------------------
 
+
 def _check_small_features(shape, report: PrintabilityReport, min_feature_mm: float):
     """Flag edges shorter than threshold and faces smaller than threshold²."""
-    min_area = min_feature_mm ** 2
+    min_area = min_feature_mm**2
 
     for edge in shape.edges():
         try:
@@ -370,14 +374,15 @@ def _check_small_features(shape, report: PrintabilityReport, min_feature_mm: flo
 # Mesh-level checks (requires trimesh — optional)
 # ---------------------------------------------------------------------------
 
+
 def _check_mesh(shape, report: PrintabilityReport, tolerance: float = 0.01):
     """
     Tessellate in-memory and run trimesh checks.
     Gracefully skips if trimesh is not installed.
     """
     try:
-        import trimesh
         import numpy as np
+        import trimesh
     except ImportError:
         report.mesh_checked = False
         return
@@ -452,6 +457,7 @@ def _check_mesh(shape, report: PrintabilityReport, tolerance: float = 0.01):
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def validate_printability(
     shape,
     process: Literal["fdm", "sla"] = "fdm",
@@ -491,7 +497,9 @@ def validate_printability(
     defaults = FDM_DEFAULTS if process == "fdm" else SLA_DEFAULTS
     _min_wall = min_wall_mm if min_wall_mm is not None else defaults["min_wall_mm"]
     _overhang = overhang_deg if overhang_deg is not None else defaults["overhang_deg"]
-    _min_feat = min_feature_mm if min_feature_mm is not None else defaults["min_feature_mm"]
+    _min_feat = (
+        min_feature_mm if min_feature_mm is not None else defaults["min_feature_mm"]
+    )
 
     report = PrintabilityReport(process=process)
 
