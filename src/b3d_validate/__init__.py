@@ -31,6 +31,7 @@ from typing import Literal
 
 from b3d_validate.geometry import GeometryReport, validate_geometry
 from b3d_validate.printability import PrintabilityReport, validate_printability
+from b3d_validate.rendering import render_svg, render_views
 
 __version__ = version("b3d-validate")
 
@@ -71,6 +72,8 @@ __all__ = [
     "GeometryReport",
     "PrintabilityReport",
     "full_check",
+    "render_svg",
+    "render_views",
     "validate_geometry",
     "validate_printability",
 ]
