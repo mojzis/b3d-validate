@@ -49,7 +49,6 @@ dev = [
 ]
 
 [tool.uv]
-exclude-newer = "2026-03-25T00:00:00Z"
 
 [tool.ruff]
 line-length = 88
@@ -109,7 +108,7 @@ cmd = "pytest -q --tb=short"
 help = "Run tests"
 
 [tool.poe.tasks.security]
-cmd = "bandit -r src -q --skip B112"
+cmd = "bandit -r src -q"
 help = "Security scan (bandit)"
 
 [tool.poe.tasks.vulns]
@@ -129,7 +128,7 @@ help = "Unused dependency check"
 shell = """
   ruff check . &
   ty check &
-  bandit -r src -q --skip B112 &
+  bandit -r src -q &
   (uvx pysentry-rs . || true) &
   wait
 """
