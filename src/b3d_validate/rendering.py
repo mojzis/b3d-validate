@@ -22,9 +22,7 @@ log = logging.getLogger(__name__)
 # View definitions
 # ---------------------------------------------------------------------------
 
-VIEWS: dict[
-    str, tuple[tuple[float, float, float], tuple[float, float, float], str]
-] = {
+VIEWS: dict[str, tuple[tuple[float, float, float], tuple[float, float, float], str]] = {
     "front": ((0, -1, 0), (0, 0, 1), "Front"),
     "back": ((0, 1, 0), (0, 0, 1), "Back"),
     "right": ((1, 0, 0), (0, 0, 1), "Right"),
@@ -85,11 +83,11 @@ def patch_degenerate_arcs() -> None:
                 self.start = start
                 self.end = start
 
-    _mod.Arc = SafeArc
+    _mod.Arc = SafeArc  # ty: ignore[invalid-assignment]
     # Also patch the module-level import that most callers use.
     import svgpathtools
 
-    svgpathtools.Arc = SafeArc
+    svgpathtools.Arc = SafeArc  # ty: ignore[invalid-assignment]
 
     _PATCH_APPLIED = True
 
@@ -110,7 +108,8 @@ def _normalise(
     mag = math.sqrt(sum(c * c for c in v))
     if mag < 1e-9:
         return (0.0, 0.0, scale)
-    return tuple(c / mag * scale for c in v)  # type: ignore[return-value]
+    f = 1.0 / mag * scale
+    return (v[0] * f, v[1] * f, v[2] * f)
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +172,7 @@ def render_svg(
         The written SVG file path.
     """
     from build123d import Compound, ExportSVG, LineType
+    from build123d.exporters import RGB
 
     output_path = Path(output_path)
     origin_dir, up, _label = VIEWS[view_name]
@@ -194,7 +194,7 @@ def render_svg(
     svg.add_layer("Visible", line_weight=line_weight_visible)
     svg.add_layer(
         "Hidden",
-        line_color=(180, 180, 180),
+        line_color=RGB(180, 180, 180),
         line_type=LineType.ISO_DOT,
         line_weight=line_weight_hidden,
     )
@@ -272,8 +272,6 @@ def render_views(
             total_warnings += 1
 
     if total_warnings:
-        log.warning(
-            "render_views: %d/%d views had issues", total_warnings, len(views)
-        )
+        log.warning("render_views: %d/%d views had issues", total_warnings, len(views))
 
     return results
