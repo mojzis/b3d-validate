@@ -49,7 +49,7 @@ dev = [
 ]
 
 [tool.uv]
-exclude-newer = "3 days"
+exclude-newer = "2026-04-03T00:00:00Z"
 
 [tool.ruff]
 line-length = 88
