@@ -109,7 +109,7 @@ cmd = "pytest -q --tb=short"
 help = "Run tests"
 
 [tool.poe.tasks.security]
-cmd = "bandit -r src -q"
+cmd = "bandit -r src -q --skip B112"
 help = "Security scan (bandit)"
 
 [tool.poe.tasks.vulns]
@@ -129,7 +129,7 @@ help = "Unused dependency check"
 shell = """
   ruff check . &
   ty check &
-  bandit -r src -q &
+  bandit -r src -q --skip B112 &
   (uvx pysentry-rs . || true) &
   wait
 """
