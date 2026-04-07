@@ -47,8 +47,11 @@ def patch_degenerate_arcs() -> None:
 
     When a curved edge projects to a zero-length arc, the upstream
     ``Arc.__init__`` raises ``AssertionError`` (``assert start != end``).
-    The patched version catches this and degrades the arc to a zero-length
-    ``Line(start, start)``, which is geometrically harmless in SVG output.
+    The patched version catches this, fills in the attributes
+    svgpathtools' serialiser reads (``radius``, ``rotation``,
+    ``large_arc``, ``sweep``...) with zero-valued defaults, and
+    overrides ``d()`` to emit an empty path fragment.  The result is
+    geometrically harmless in SVG output.
 
     This function is idempotent — calling it more than once is safe.
     """
@@ -66,7 +69,14 @@ def patch_degenerate_arcs() -> None:
         return
 
     class SafeArc(_OrigArc):  # type: ignore[misc]
-        """Arc subclass that degrades to a zero-length Line on bad geometry."""
+        """Arc subclass that degrades to a no-op on bad geometry.
+
+        When the upstream ``Arc.__init__`` fails (typically because
+        ``start == end``), this subclass fills in every attribute that
+        ``svgpathtools.path.Arc.d()`` and related serialisers read,
+        using zero-valued defaults.  ``d()`` is overridden to emit an
+        empty string so the degenerate arc produces no visible output.
+        """
 
         _b3d_patched = True
 
@@ -74,14 +84,26 @@ def patch_degenerate_arcs() -> None:
             try:
                 super().__init__(*args, **kwargs)
             except AssertionError:
-                # Degrade: become a zero-length Line(start, start).
+                # Degrade gracefully: populate the attributes svgpathtools
+                # reads during serialisation so ``d()`` and friends cannot
+                # raise ``AttributeError`` later.
                 start = args[0] if args else kwargs.get("start", 0j)
-                from svgpathtools import Line
-
-                self._degenerate_line = Line(start, start)
-                # Copy essential attributes so callers don't crash.
                 self.start = start
                 self.end = start
+                self.radius = 0 + 0j
+                self.rotation = 0.0
+                self.large_arc = False
+                self.sweep = False
+                self.center = start
+                self.theta = 0.0
+                self.delta = 0.0
+                self.phi = 0.0
+
+        def d(self) -> str:  # type: ignore[override]
+            # If the arc is degenerate (start == end), emit nothing.
+            if self.start == self.end:
+                return ""
+            return super().d()  # ty: ignore[unresolved-attribute]
 
     _mod.Arc = SafeArc  # ty: ignore[invalid-assignment]
     # Also patch the module-level import that most callers use.
@@ -118,24 +140,45 @@ def _normalise(
 
 
 def safe_add_shape(svg, edges, layer_name: str) -> int:
-    """Add *edges* to *svg* on *layer_name*, returning a failure count.
+    """Add *edges* to *svg* on *layer_name*, returning the number skipped.
 
-    Returns 0 on success.  On any exception the error is logged as a
-    warning and 1 is returned (representing the batch of edges that
-    could not be added).
+    Tries the fast batch path first.  If that raises (e.g. a single
+    degenerate edge pokes a hole in the svgpathtools serialiser), it
+    retries edge-by-edge so only the offender is dropped rather than
+    the whole layer.
     """
+    if not edges:
+        return 0
     try:
         svg.add_shape(edges, layer=layer_name)
     except Exception:
-        n = len(edges) if edges else 0
         log.warning(
-            "safe_add_shape: failed to add %d edge(s) to layer '%s'",
-            n,
+            "safe_add_shape: batch add failed for layer '%s', "
+            "falling back to per-edge add",
             layer_name,
             exc_info=True,
         )
-        return n
-    return 0
+    else:
+        return 0
+
+    failed = 0
+    for edge in edges:
+        try:
+            svg.add_shape(edge, layer=layer_name)
+        except Exception as e:
+            failed += 1
+            log.debug(
+                "safe_add_shape: dropping edge on layer '%s': %s",
+                layer_name,
+                e,
+            )
+    if failed:
+        log.warning(
+            "safe_add_shape: skipped %d edge(s) on layer '%s'",
+            failed,
+            layer_name,
+        )
+    return failed
 
 
 # ---------------------------------------------------------------------------

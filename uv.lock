@@ -6,6 +6,10 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 
+[options]
+exclude-newer = "2026-04-04T22:33:46.126800381Z"
+exclude-newer-span = "P3D"
+
 [[package]]
 name = "anytree"
 version = "2.13.0"
